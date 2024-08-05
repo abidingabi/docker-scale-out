@@ -14,7 +14,7 @@ DOCKER_DEFAULT_PLATFORM ?= linux/$(shell docker info -f '{{ .Architecture}}')
 
 .EXPORT_ALL_VARIABLES:
 
-default: cloud.socket ./docker-compose.yml run
+default: ./cloud.socket ./docker-compose.yml run
 
 ./docker-compose.yml: buildout.sh
 	bash buildout.sh > ./docker-compose.yml
