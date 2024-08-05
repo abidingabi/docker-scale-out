@@ -14,12 +14,12 @@ DOCKER_DEFAULT_PLATFORM ?= linux/$(shell docker info -f '{{ .Architecture}}')
 
 .EXPORT_ALL_VARIABLES:
 
-default: ./cloud.socket ./docker-compose.yml run
+default: ./docker-compose.yml run
 
 ./docker-compose.yml: buildout.sh
 	bash buildout.sh > ./docker-compose.yml
 
-build: ./docker-compose.yml ./cloud.socket
+build: ./docker-compose.yml
 	python3 ./cloud_monitor.py3 "$(DC)" $(COMPOSE_YAML) $(CLOUD_PID) $(CLOUD_SOCKET)
 	env BUILDKIT_PROGRESS=plain COMPOSE_HTTP_TIMEOUT=3000 $(DC) $(BUILD)
 
@@ -41,7 +41,7 @@ uninstall:
 	$(DC) down --rmi all --remove-orphans -t1 -v
 	$(DC) rm -v
 
-run: ./docker-compose.yml ./cloud.socket
+run: ./docker-compose.yml
 	python3 ./cloud_monitor.py3 "$(DC)" $(COMPOSE_YAML) $(CLOUD_PID) $(CLOUD_SOCKET)
 	$(DC) up --remove-orphans --build --scale cloud=0 --no-recreate -d
 
