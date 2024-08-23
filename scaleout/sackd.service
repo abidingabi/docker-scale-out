@@ -1,5 +1,0 @@
-[Unit]
-ConditionPathExists=/etc/slurm/slurm.key
-[Service]
-ExecCondition=/bin/sh -c '/usr/local/bin/slurmd.check.sh && exit 1 || exit 0'
-Environment=SACKD_OPTIONS=-vvvvv

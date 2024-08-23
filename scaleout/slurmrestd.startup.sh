@@ -3,8 +3,8 @@
 mkdir -p -m 0755 /run/slurm
 chown slurmrestd:slurmrestd -R /run/slurm
 
-#wait for primary mgt node to be done starting up
-while [[ ! -s /auth/slurm ]]
+#wait until config is filled out by controller before starting
+while [ ! -s /etc/slurm/nodes.conf ]
 do
 	sleep 0.25
 done

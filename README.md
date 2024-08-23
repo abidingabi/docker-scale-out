@@ -7,8 +7,7 @@ Docker compose cluster for testing Slurm
   * docker-compose-plugin v2.18.1+
   * ssh (client)
   * jq
-  * python3
-    * python3-daemon
+  * python3 (cloud mode)
 
 ## Changes needed in sysctl.conf:
 ```
@@ -68,9 +67,6 @@ Before=slices.target
 [Slice]
 CPUAccounting=true
 MemoryAccounting=true
-CPUWeight=idle
-IOAccounting=true
-IOWeight=1
 Delegate=yes
 ```
 
@@ -112,8 +108,8 @@ Nginx Proxy node:
 Rest API Nodes:
   * rest
 
-Kibana (Only supports IPv4):
-  * View http://127.0.0.1:5601/
+Kibana:
+  * View http://localhost:5601/
 
 Elasticsearch:
   * View http://localhost:9200/
@@ -141,31 +137,11 @@ Each cluster must have a unique class B subnet.
 Default IPv4 is SUBNET="10.11".
 Default IPv6 is SUBNET6="2001:db8:1:1::".
 
-## Changing forwarded ports
-
-Elastic search port:
-  * export ELASTIC_SEARCH_PORT=9200
-
-Kibana port:
-  * export KIBANA_PORT=5601
-
-Slurmrestd proxy port:
-  * export PROXY_PORT=8080
-
-Grafana port:
-  * export GRAFANA_PORT=3000
-
-OpenOnDemand port:
-  * export OPEN_ONDEMAND_PORT=8081
-
-XDMoD port:
-  * export XDMOD_PORT=8082
-
 ## Custom Nodes
 
-Custom node lists may be provided by setting env NODELIST (defaults to
-scaleout/nodelist) to point to a file containing list of nodes for the cluster
-or modifing the default generated "nodelist" file in the scaleout directory.
+Custom node lists may be provided by setting NODELIST to point to a file
+containing list of nodes for the cluster or modifing the default generated
+"nodelist" file in the scaleout directory.
 
 The node list follows the following format with one node per line:
 > ${HOSTNAME} ${CLUSTERNAME} ${IPv4} ${IPv6}
@@ -198,6 +174,15 @@ make build
 ```
 make
 ```
+
+## To build and run in Cloud mode:
+
+```
+make clean
+make cloud
+```
+
+Note: cloud mode will run in the foreground.
 
 ## To build without caching:
 
@@ -321,24 +306,10 @@ sudo -u xdmod -- /usr/bin/xdmod-ingestor
 exit
 ```
 
-## How to disable building specific service containers
+## How to disable buidling xdmod container
 
-This is will disable attempts to build and start the given containers for a service:
+This is will only disable attempts to build and start the container.
 
-XDMoD:
-  * export DISABLE_XDMOD=1
-
-Grafana:
-  * export DISABLE_GRAFANA=1
-
-Elastic Search (also disables Grafana and Kibana):
-  * export DISABLE_ELASTICSEARCH=1
-
-Kibana:
-  * export DISABLE_KIBANA=1
-
-Open OnDemand:
-  * export DISABLE_OPEN_ONDEMAND=1
-
-InfluxDB:
-  * export DISABLE_INFLUXDB=1
+```
+export DISABLE_XDMOD=1
+```
