@@ -314,3 +314,14 @@ This is will only disable attempts to build and start the container.
 ```
 export DISABLE_XDMOD=1
 ```
+
+## Maxing out kernel cgroups total
+
+The Linux kernel has a hard limit of 65535 cgroups total. Stacking large number
+of jobs or scaleout instances may result in the following error:
+
+```
+error: proctrack_g_create: No space left on device
+```
+
+When this happens, fewers jobs must be run as this a kernel limitation.
