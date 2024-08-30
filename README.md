@@ -34,6 +34,9 @@ vm.max_map_count=262144
 fs.file-max=10000000
 fs.inotify.max_user_instances=65535
 fs.inotify.max_user_watches=1048576
+
+#Request kernel max number of cgroups
+fs.inotify.max_user_instances=65535
 ```
 
 ## Docker configuration required with cgroupsv2
