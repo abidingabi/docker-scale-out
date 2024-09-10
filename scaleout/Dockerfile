@@ -74,11 +74,17 @@ RUN ./configure --enable-slurmrestd --enable-multiple-slurmd --enable-memory-lea
 	make -j >/dev/null && make install >/dev/null && make -j install-contrib >/dev/null && \
 	cd contribs && make install && \
 	ln -nfs /usr/local/src/slurm/contribs/slurm_completion_help/slurm_completion.sh /etc/bash_completion.d/slurm_completion.sh
+COPY slurm.bash_profile /tmp/slurm.bash_profile
 RUN /usr/sbin/groupadd -r slurm -g 1001 && \
-	/usr/sbin/useradd -c "scheduler daemon" -d "/usr/local/src/slurm/testsuite" -g slurm -s /bin/bash -u 1001 -r slurm && \
+	/usr/sbin/useradd -c "scheduler daemon" -d "/home/slurm/" -g slurm -s /bin/bash -u 1001 -r slurm && \
 	/usr/sbin/groupadd -r slurmrestd -g 1002 && \
 	/usr/sbin/useradd -c "REST daemon" -d "/etc/slurm" -g slurmrestd -s /bin/bash -u 1002 -r slurmrestd && \
-	echo 'slurm        ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers
+	echo 'slurm        ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers && \
+	mkdir -m 0770 -p /home/slurm && chown slurm:slurm /home/slurm && \
+	mv /tmp/slurm.bash_profile /home/slurm/.bash_profile && \
+	chown slurm:slurm /home/slurm/.bash_profile && \
+	chmod 0700 /home/slurm/.bash_profile
+
 RUN mkdir -p /var/spool/slurm/statesave /var/spool/slurm/spool
 RUN chown slurm:slurm -R /var/spool/slurm
 RUN /usr/sbin/groupadd -r munge
