@@ -17,9 +17,9 @@ RUN dnf -y install --allowerasing --exclude google-chrome-* \
 	libcurl-devel freeipmi-devel numactl-devel lynx numactl \
 	rdma-core-devel gcc-c++ flex libgcrypt-devel gcc-gfortran \
 	strace ltrace gdb valgrind wget cmake sudo jansson-devel \
-	openssh-server pam-devel xterm oniguruma-devel \
+	openssh-server pam-devel xterm oniguruma-devel xmvn \
 	lua-devel xauth man mailx postfix http-parser-devel \
-	libyaml-devel mlocate gettext-devel texinfo java-11-openjdk \
+	libyaml-devel mlocate gettext-devel texinfo java-21-openjdk-devel \
 	systemd net-tools socat jq squashfs-tools fuse-overlayfs pigz \
 	fuse-devel rpcgen cronie valgrind-devel iproute procps-ng \
 	lua-json.noarch rsync crun go gpgme-devel libseccomp-devel \
@@ -27,15 +27,17 @@ RUN dnf -y install --allowerasing --exclude google-chrome-* \
 	python3-setuptools-wheel python3-virtualenv python3-urllib3 \
 	python3-six python3-requests python3-pexpect \
 	python3.11 python3.11-pip python3.11-pytest python3.11-requests
-RUN alternatives --set python3 /usr/bin/python3.11 && \
+RUN update-alternatives --set 'java' java-21-openjdk.x86_64 && \
+	alternatives --set python3 /usr/bin/python3.11 && \
 	ln -s $(which pytest-3.11) /usr/bin/pytest-3 && \
+	ln -s $(which pytest-3.11) /usr/bin/pytest && \
 	ln -s /usr/lib/python3.6/site-packages/pexpect/ /usr/lib/python3.11/site-packages/pexpect && \
 	ln -s /usr/lib/python3.6/site-packages/ptyprocess/ /usr/lib/python3.11/site-packages/ptyprocess
 RUN git clone --depth 1 --single-branch -b v3.9.2 https://github.com/luarocks/luarocks.git /usr/local/src/luarocks/
 WORKDIR /usr/local/src/luarocks/
 RUN ./configure --prefix=/usr/local --sysconfdir=/etc/ && make -j && make install
 RUN luarocks install lunajson
-RUN pip3 install certifi pip wheel setuptools markdown
+RUN pip3 install certifi pip wheel setuptools markdown pydantic dateutils
 RUN git clone --depth 1 --single-branch -b v1.15.2 https://github.com/benmcollins/libjwt.git /usr/local/src/libjwt/
 WORKDIR /usr/local/src/libjwt
 RUN autoreconf --force --install && ./configure --prefix=/usr/local --sysconfdir=/etc/ && make -j && make install
@@ -72,11 +74,17 @@ RUN ./configure --enable-slurmrestd --enable-multiple-slurmd --enable-memory-lea
 	make -j >/dev/null && make install >/dev/null && make -j install-contrib >/dev/null && \
 	cd contribs && make install && \
 	ln -nfs /usr/local/src/slurm/contribs/slurm_completion_help/slurm_completion.sh /etc/bash_completion.d/slurm_completion.sh
+COPY slurm.bash_profile /tmp/slurm.bash_profile
 RUN /usr/sbin/groupadd -r slurm -g 1001 && \
-	/usr/sbin/useradd -c "scheduler daemon" -d "/usr/local/src/slurm/testsuite" -g slurm -s /bin/bash -u 1001 -r slurm && \
+	/usr/sbin/useradd -c "scheduler daemon" -d "/home/slurm/" -g slurm -s /bin/bash -u 1001 -r slurm && \
 	/usr/sbin/groupadd -r slurmrestd -g 1002 && \
 	/usr/sbin/useradd -c "REST daemon" -d "/etc/slurm" -g slurmrestd -s /bin/bash -u 1002 -r slurmrestd && \
-	echo 'slurm        ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers
+	echo 'slurm        ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers && \
+	mkdir -m 0770 -p /home/slurm && chown slurm:slurm /home/slurm && \
+	mv /tmp/slurm.bash_profile /home/slurm/.bash_profile && \
+	chown slurm:slurm /home/slurm/.bash_profile && \
+	chmod 0700 /home/slurm/.bash_profile
+
 RUN mkdir -p /var/spool/slurm/statesave /var/spool/slurm/spool
 RUN chown slurm:slurm -R /var/spool/slurm
 RUN /usr/sbin/groupadd -r munge
@@ -132,11 +140,10 @@ RUN postconf -e "mydestination = cluster scaleout localhost.localdomain localhos
 RUN newaliases && \
 	postconf -e "mydestination = login login.localdomain cluster scaleout localhost.localdomain, localhost"
 
-#Install OpenAPI generator jar directly (installing from source is very slow)
-RUN mkdir -p /usr/local/jar/ && \
-	curl -s https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -o /usr/local/jar/openapi-generator-cli.jar && \
-	echo -e "#!/bin/bash\nexec java -jar /usr/local/jar/openapi-generator-cli.jar \$@" > /usr/local/bin/openapi-generator-cli && chmod 0755 /usr/local/bin/openapi-generator-cli
-#https://pypi.org/project/openapi-python-client/
+#Install OpenAPI generator wrapper script and force local cache of 7.3.0 by default
+RUN wget -q 'https://raw.githubusercontent.com/OpenAPITools/openapi-generator/master/bin/utils/openapi-generator-cli.sh' -O /usr/local/bin/openapi-generator-cli && \
+	chmod +x /usr/local/bin/openapi-generator-cli && \
+	env OPENAPI_GENERATOR_VERSION=7.3.0 /usr/local/bin/openapi-generator-cli version
 
 RUN git clone --depth 1 --single-branch -b v0.9.1 https://github.com/NVIDIA/pyxis.git /usr/local/src/pyxis
 WORKDIR /usr/local/src/pyxis
