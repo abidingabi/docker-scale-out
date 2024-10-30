@@ -622,22 +622,22 @@ cat <<EOF
         ipv4_address: ${SUBNET}.1.19
         ipv6_address: ${SUBNET6}1:19
 $LOGGING
-  grafana:
-    image: grafana
-    build:
-      context: ./grafana
-      network: host
-    environment:
-      - SUBNET="${SUBNET}"
-      - SUBNET6="${SUBNET6}"
-    volumes:
-      - /dev/log:/dev/log
-    networks:
-      internal:
-        ipv4_address: ${SUBNET}.1.20
-        ipv6_address: ${SUBNET6}1:20
-$GRAFANA_PORTS
-$LOGGING
+#   grafana:
+#     image: grafana
+#     build:
+#       context: ./grafana
+#       network: host
+#     environment:
+#       - SUBNET="${SUBNET}"
+#       - SUBNET6="${SUBNET6}"
+#     volumes:
+#       - /dev/log:/dev/log
+#     networks:
+#       internal:
+#         ipv4_address: ${SUBNET}.1.20
+#         ipv6_address: ${SUBNET6}1:20
+# GRAFANA_PORTS
+# LOGGING
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.1
     environment:
