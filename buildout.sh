@@ -568,27 +568,27 @@ $HOSTLIST
 EOF
 
 cat <<EOF
-  open-ondemand:
-    build:
-      context: ./open-ondemand
-      network: host
-    image: open-ondemand
-    environment:
-      - SUBNET="${SUBNET}"
-      - SUBNET6="${SUBNET6}"
-      - DEFAULT_SSHHOST=login
-    volumes:
-      - /dev/log:/dev/log
-      - etc-ssh:/etc/shared-ssh
-      - home:/home/
-    networks:
-      internal:
-        ipv4_address: ${SUBNET}.1.21
-        ipv6_address: ${SUBNET6}1:21
-    depends_on:
-      - "login"
-$ONDEMAND_PORTS
-$LOGGING
+#   open-ondemand:
+#     build:
+#       context: ./open-ondemand
+#       network: host
+#     image: open-ondemand
+#     environment:
+#       - SUBNET="${SUBNET}"
+#       - SUBNET6="${SUBNET6}"
+#       - DEFAULT_SSHHOST=login
+#     volumes:
+#       - /dev/log:/dev/log
+#       - etc-ssh:/etc/shared-ssh
+#       - home:/home/
+#     networks:
+#       internal:
+#         ipv4_address: ${SUBNET}.1.21
+#         ipv6_address: ${SUBNET6}1:21
+#     depends_on:
+#       - "login"
+# ONDEMAND_PORTS
+# LOGGING
   influxdb:
     build:
       context: ./influxdb
